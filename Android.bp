@@ -10,8 +10,8 @@ cc_library_headers {
     min_sdk_version: "29",
 }
 
-rust_ffi {
-    name: "libquiche_ffi",
+rust_defaults {
+    name: "libquiche_defaults",
     stem: "libquiche",
     host_supported: true,
     crate_name: "quiche",
@@ -43,6 +43,16 @@ rust_ffi {
         "com.android.resolv",
     ],
     min_sdk_version: "29",
+}
+
+rust_ffi {
+    name: "libquiche_ffi",
+    defaults: ["libquiche_defaults"],
+}
+
+rust_library {
+    name: "libquiche",
+    defaults: ["libquiche_defaults"],
 }
 
 // dependent_library ["feature_list"]
