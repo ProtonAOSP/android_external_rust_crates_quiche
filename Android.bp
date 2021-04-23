@@ -104,10 +104,6 @@ rust_defaults {
         "libring",
         "liburl",
     ],
-    shared_libs: [
-        "libcrypto",
-        "libssl",
-    ],
     data: [
         "examples/cert.crt",
         "examples/cert.key",
@@ -122,11 +118,21 @@ rust_test_host {
     test_options: {
         unit_test: true,
     },
+    shared_libs: [
+        "libcrypto",
+        "libssl",
+    ],
 }
 
 rust_test {
     name: "quiche_device_test_src_lib",
     defaults: ["quiche_defaults"],
+    // To run this test in R platform, it's required to statically link
+    // libcrypto and libssl.
+    static_libs: [
+        "libcrypto_static",
+        "libssl",
+    ],
 }
 
 // dependent_library ["feature_list"]
