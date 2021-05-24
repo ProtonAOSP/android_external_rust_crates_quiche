@@ -1,47 +1,16 @@
 diff --git a/Android.bp b/Android.bp
-index 130d4f3..981eb96 100644
+index aced8a6..578cc68 100644
 --- a/Android.bp
 +++ b/Android.bp
-@@ -32,75 +32,56 @@ license {
-     ],
+@@ -43,25 +43,38 @@ cc_library_headers {
+     min_sdk_version: "29",
  }
  
 -rust_ffi_shared {
 -    name: "libquiche_shared",
--    stem: "libquiche",
--    host_supported: true,
--    crate_name: "quiche",
--    srcs: ["src/lib.rs"],
--    edition: "2018",
--    features: [
--        "boringssl-vendored",
--        "default",
--    ],
--    rustlibs: [
--        "liblazy_static",
--        "liblibc",
--        "liblibm",
--        "liblog_rust",
--        "libring",
--    ],
--    static_libs: [
--        "libcrypto",
--        "libssl",
-+cc_library_headers {
-+    name: "libquiche_ffi_headers",
-+    export_include_dirs: ["include"],
-+    apex_available: [
-+        "//apex_available:platform",
-+        "com.android.resolv",
-     ],
-+    min_sdk_version: "29",
- }
- 
--rust_library {
--    name: "libquiche",
 +rust_defaults {
 +    name: "libquiche_defaults",
-+    stem: "libquiche",
+     stem: "libquiche",
      host_supported: true,
      crate_name: "quiche",
      srcs: ["src/lib.rs"],
@@ -62,21 +31,25 @@ index 130d4f3..981eb96 100644
      ],
 -    static_libs: [
 +    prefer_rlib: true,
-+    shared_libs: [
-         "libcrypto",
-         "libssl",
-     ],
 +    // For DnsResolver (Mainline module introduced in Q).
 +    apex_available: [
 +        "//apex_available:platform",
 +        "com.android.resolv",
 +    ],
 +    min_sdk_version: "29",
- }
++}
++
++rust_ffi {
++    name: "libquiche_ffi",
++    defaults: ["libquiche_defaults"],
++    shared_libs: [
+         "libcrypto",
+         "libssl",
+     ],
+@@ -69,52 +82,20 @@ rust_ffi_shared {
  
--rust_ffi_static {
--    name: "libquiche_static",
--    stem: "libquiche",
+ rust_library {
+     name: "libquiche",
 -    host_supported: true,
 -    crate_name: "quiche",
 -    srcs: ["src/lib.rs"],
@@ -93,21 +66,47 @@ index 130d4f3..981eb96 100644
 -        "libring",
 -    ],
 -    static_libs: [
--        "libcrypto",
--        "libssl",
++    defaults: ["libquiche_defaults"],
++    shared_libs: [
+         "libcrypto",
+         "libssl",
+     ],
+-    apex_available: [
+-        "//apex_available:platform",
+-        "com.android.resolv",
 -    ],
-+rust_ffi {
-+    name: "libquiche_ffi",
-+    defaults: ["libquiche_defaults"],
-+}
-+
-+rust_library {
-+    name: "libquiche",
-+    defaults: ["libquiche_defaults"],
+-    min_sdk_version: "29",
  }
  
- rust_defaults {
-@@ -111,7 +92,7 @@ rust_defaults {
+-rust_ffi_static {
++// This target is used by doh_unit_test to prevent compatibility issues
++// because doh_unit_test needs to be run on the R platform.
++rust_library_rlib {
+     name: "libquiche_static",
+-    stem: "libquiche",
+-    host_supported: true,
+-    crate_name: "quiche",
+-    srcs: ["src/lib.rs"],
+-    edition: "2018",
+-    features: [
+-        "boringssl-vendored",
+-        "default",
+-    ],
+-    rustlibs: [
+-        "liblazy_static",
+-        "liblibc",
+-        "liblibm",
+-        "liblog_rust",
+-        "libring",
+-    ],
++    defaults: ["libquiche_defaults"],
+     static_libs: [
+-        "libcrypto",
++        "libcrypto_static",
+         "libssl",
+     ],
+ }
+@@ -127,7 +108,7 @@ rust_defaults {
      auto_gen_config: true,
      edition: "2018",
      features: [
@@ -116,7 +115,7 @@ index 130d4f3..981eb96 100644
          "default",
      ],
      rustlibs: [
-@@ -123,10 +104,12 @@ rust_defaults {
+@@ -139,10 +120,12 @@ rust_defaults {
          "libring",
          "liburl",
      ],
@@ -133,7 +132,7 @@ index 130d4f3..981eb96 100644
  }
  
  rust_test_host {
-@@ -135,11 +118,21 @@ rust_test_host {
+@@ -151,11 +134,21 @@ rust_test_host {
      test_options: {
          unit_test: true,
      },
